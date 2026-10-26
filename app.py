@@ -1,56 +1,108 @@
 
-from flask import Flask, request
+from flask import Flask, request, render_template_string
 from html import escape
 
 app = Flask(__name__)
 
-@app.route("/")
+PAGE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+    <title>BEYCAN Python Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f6ff;
+            padding: 30px 15px;
+        }
+        .card {
+            background: white;
+            max-width: 500px;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px #ddd;
+        }
+        h1 { color: #1254c4; }
+        .option {
+            display: block;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #1254c4;
+            color: white;
+            border: 0;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .result {
+            padding: 15px;
+            background: #eaf4ff;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>BEYCAN Coding Quiz</h1>
+    <p>Learn Python Through Play!</p>
+
+    <h3>Which function displays text
+        on the screen in Python?</h3>
+
+    <form method="POST">
+        {% for option in options %}
+        <label class="option">
+            <input type="radio" name="answer"
+                   value="{{ option }}" required>
+            {{ option }}()
+        </label>
+        {% endfor %}
+        <button type="submit">Submit Answer</button>
+    </form>
+
+    {% if result %}
+    <div class="result">
+        <h3>{{ result }}</h3>
+        <p>Your Score: {{ score }}/10</p>
+        <p>{{ explanation }}</p>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>BEYCAN Python Test</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background: #f1f6ff;
-                text-align: center;
-                padding: 60px 20px;
-            }
-            h1 { color: #1254c4; }
-            input, button {
-                padding: 12px;
-                margin: 5px;
-                border-radius: 6px;
-            }
-            button {
-                background: #1254c4;
-                color: white;
-                border: none;
-                cursor: pointer;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Welcome to BEYCAN 🚀</h1>
-        <h3>My First Python Web Application</h3>
-        <p>Python Flask Server is Running!</p>
+    options = ["input", "print", "show", "display"]
+    result = None
+    score = 0
+    explanation = ""
 
-        <form action="/hello" method="get">
-            <input type="text" name="name"
-                   placeholder="Enter your name" required>
-            <button type="submit">Say Hello</button>
-        </form>
-    </body>
-    </html>
-    """
+    if request.method == "POST":
+        answer = request.form.get("answer", "")
 
-@app.route("/hello")
-def hello():
-    name = escape(request.args.get("name", "Student"))
-    return f"<h1>Hello, {name}!</h1><p>Welcome to BEYCAN.</p><a href='/'>Go Back</a>"
+        if answer == "print":
+            result = "Correct! Well Done!"
+            score = 10
+        else:
+            result = "Try Again!"
+            explanation = "Correct answer: print()"
+
+    return render_template_string(
+        PAGE,
+        options=options,
+        result=result,
+        score=score,
+        explanation=explanation
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
